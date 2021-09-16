@@ -1,5 +1,50 @@
 # define a helper function
 
+import pandas as pd
+import datetime 
+import numpy as np
+
+
+
+
+def concat_data(st, end, name_lst, data_path):
+    df_l = []
+    for year in range(st, end+1, 1):
+        df = pd.read_excel(f"{data_path}/SDC/{year}.xlsx", header=1, engine='openpyxl')
+        #df = df.drop(df.columns[4], axis=1) # this column is duplicate with column 3 
+        #print(len(df.columns))
+        df.columns = name_lst
+        
+        # check date var loading ok
+        check = df[df['DA'] == datetime.time(0, 0)]
+        if check.shape[0] == 0 :
+            print('date variables loading ok \n')
+        else:
+            print('date variables loading fail, please manually check. number of failed records: ', check.shape[0])
+        
+        df_l.append(df)
+        print(f'{year} data shape:', df.shape)
+        del df
+    df = pd.concat(df_l)
+    return df
+
+
+
+def get_sic(df):
+    '''
+    df: the sdc table contains sic variable named as `ASIC2`
+    
+    '''
+    x = df.ASIC2.str.split('/')
+    x = x.transform(lambda x: x[0] if not isinstance(x, float) else np.nan)
+    df['SIC_A'] = x
+
+    x = df.ASIC2.str.split('/')
+    x = x.transform(lambda x: x[0] if not isinstance(x, float) else np.nan)
+    df['SIC_T'] = x
+    
+    return df 
+
 def plot_missing(df):
     from matplotlib import pyplot as plt
     
@@ -113,3 +158,6 @@ def build_query(dataset, **kwargs):
     print(cmd)
 
     return(cmd)
+
+
+
