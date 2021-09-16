@@ -14,7 +14,7 @@ root
 ---- wrds_bridge.csv # the GVKEY-CUSIP Linking table downloaded from WRDS
 ---- evans_bridge.csv # 
 ---- tmp
------- where the cache pickle file stored in
+------ [filename].pickle # where the cache pickle file stored in
 -- MA
 ---- <where all the code stored, everything on Github>
 
