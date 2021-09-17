@@ -23,7 +23,7 @@ class MADataLoader():
         self.sdc_from_cache = sdc_from_cache
 
         self.glaspe_sample = 3
-        self.name_lst = [
+        self.name_lst =  name_lst = [
                 'ACU', 'ASIC2', 'ABL', 'ANL', 'APUBC', 'AUP', 'AUPSIC', 'AUPBL', 'AUPNAMES', 'AUPPUB',
                 'BLOCK','CREEP','DA','DE','STATC','SYNOP','VAL','PCTACQ','PSOUGHTOWN','PSOUGHT','PHDA','PCTOWN','PSOUGHTT','PRIVATIZATION','DEAL_NO',
                 'TCU', 'TSIC2', 'TBL', 'TNL', 'TPUBC', 'TUP', 'TUPSIC', 'TUPBL', 'TUPNAMES', 'TUPPUB'    
@@ -119,7 +119,7 @@ class MADataLoader():
             sdc_df = get_sic(sdc_df)
             # add year varibale
             sdc_df['YEAR'] = sdc_df.DA.dt.year
-            # update name lst
+            self.name_lst.append('YEAR') # update name_lst
         
             if pickle_it:
                 print(f'saving sdc table ranging from {self.s_year} to {self.e_year} to {self.tmp_data_path}')
@@ -127,8 +127,7 @@ class MADataLoader():
 
         if self.glaspe:
             print("SDC Data looks like:", sdc_df.sample(3).T)
-        
-        self.name_lst += ['SIC_A', 'SIC_T', 'YEAR'] 
+
 
         return sdc_df
 
