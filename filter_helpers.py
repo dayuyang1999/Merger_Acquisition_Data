@@ -71,44 +71,7 @@ def self_merge_filter(df):
     return df.reset_index(drop=True)
 
 
-def gvkey_checker(df):
-    '''
-    add an indicator variable named "XXX_ok" and 'GVKEY_OVERALL' to indicate GVKEY merge conditions
-    Do not downsize the df !
-    '''
-    merged_raw = df
-    # pre define 2 inner helpers
-    def mark_gvkey_ok(row, key):
-    #    print(row['GVKEY_'+key])
-        if pd.notna(row['GVKEY_'+key]) & (row['LINKDT_'+key] <= row['DA']) & (row['LINKENDDT_'+key] >= row['DA']):
-            return 1
-        else:
-            return 0
-        
-    def mark_gvkey_total_ok(row):
-        if row.ACU_OK & row.TCU_OK:
-            return '1'
-        elif row.AUP_OK & row.TCU_OK:
-            return '2'
-        elif row.ACU_OK & row.TUP_OK:
-            return '3'
-        elif row.AUP_OK & row.TUP_OK:
-            return '4'
-        else:
-            return '0'
-    drop_name_lst = []
-    for part in ['A', 'T']:
-        for ent in ['CU', 'UP']:
-            key = part+ent
-            merged_raw[key+'_OK'] = merged_raw.apply(mark_gvkey_ok, key=key, axis=1)
-            drop_name_lst += [key+'_OK']
-            
-    merged_raw['GVKEY_OVERALL'] = merged_raw.apply(mark_gvkey_total_ok, axis=1)
-    
-    merged_raw.drop(drop_name_lst, axis=1) # drop "xx_ok" variables
-    
-    print('Number of Conditions: \n', merged_raw['GVKEY_OVERALL'].value_counts(),'\n')
-    return merged_raw
+
     
 
 def gvkey_filter(df):
