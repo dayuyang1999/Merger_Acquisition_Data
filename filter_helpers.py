@@ -120,3 +120,6 @@ def create_gvkey_var(df):
     merged_raw_no0['TGVKEY'] = merged_raw_no0.apply(gvkey_filter_t, axis=1)
     merged = merged_raw_no0[keep_lst]
     return merged
+
+
+
