@@ -100,6 +100,7 @@ class MADataLoader():
 
         if (from_cache) & (os.path.isfile(pjoin(tmp_data_path , f'sdc_{s_year}_{e_year}.pickle'))):
             sdc_df = pd.read_pickle(pjoin(self.tmp_data_path , f'sdc_{s_year}_{e_year}.pickle'))
+            print("loading data from previous download. Did not download again")
         else:                 
             sdc_df = concat_data(self.s_year, self.e_year, self.name_lst, self.data_path)
             sdc_df = sdc_df.reset_index()

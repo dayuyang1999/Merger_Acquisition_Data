@@ -1,4 +1,7 @@
 # helper func
+import numpy as np
+from scipy.stats.mstats import winsorize
+
 
 def get_lags(sub_pd):
     sub_pd = sub_pd[['gvkey', 'year', 'sale', 'at']]
@@ -64,3 +67,47 @@ def create_var(df):
     
     
     
+# def helper fun
+def deal_na(df, na_thres):
+    '''
+    df: raw financial varibale table
+        - the first 2 columns are `gvkey` and `year`
+        - the rest are fianncial variables
+    
+    '''
+    n_features = len(df.columns) - 2 # exclude gvkey and year
+    print(f"totally {n_features} number of financial features, tolerance of num of missing is:", na_thres)
+    ratio_pd_w = df
+    # replace inf to na
+    ratio_pd_w.replace([np.inf, -np.inf], np.nan, inplace=True)
+    # count na of each row
+    ratio_pd_w['n_na'] = ratio_pd_w.isna().sum(axis=1) # each row has how many Nas
+     # only retain those Na < thres
+    ratio_pd_w = ratio_pd_w[ratio_pd_w['n_na'] <= na_thres].reset_index(drop=True)
+    
+    for colname in ratio_pd_w.columns[2:(2+n_features)]:
+        # remove outliers
+        ratio_pd_w[colname] = winsorize(ratio_pd_w[colname], limits=[0.01, 0.01], nan_policy='omit')
+        # impute na with mean
+        ratio_pd_w[colname].fillna(value=ratio_pd_w[colname].mean(skipna=True), inplace=True)
+    assert ratio_pd_w.isna().sum().sum() == 0
+    return ratio_pd_w
+
+
+def merge_fv_ma(df_fv_nona, df_ma):
+    '''
+    df_fv_nona: df_fv with no single missing value
+    df_ma: 
+    
+    '''
+    assert df_fv_nona.isna().sum().sum() == 0
+    merge_a = df_ma.merge(df_fv_nona, how = 'inner', left_on=['AGVKEY', 'YEAR'], right_on = ['gvkey','year'])
+    merge_a.columns = list(merge_a.columns[0:len(merge_a.columns)-15]) + [x.upper()+'_A' for x in merge_a.columns[-15:]]
+    
+    merge_t =  merge_a.merge(df_fv_nona, how = 'inner', left_on=['TGVKEY', 'YEAR'], right_on = ['gvkey','year'])
+    merge_t.columns = list(merge_t.columns[0:len(merge_t.columns)-15]) + [x.upper()+'_T' for x in merge_t.columns[-15:]]
+
+    #print("num of obs for original MA table: ", df_ma.shape[0], '\n')
+    #print('num of obs in merged table:', merge_t.shape[0], '\n')
+    
+    return merge_t
