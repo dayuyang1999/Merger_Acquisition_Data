@@ -163,14 +163,14 @@ def build_query(dataset, **kwargs):
 
 
 
-def get_firm_annual_data(tmp_data_path, s_year, e_year):
+def get_firm_annual_data(tmp_data_path, s_year, e_year, db):
     # Among the selected variables, for those money denominated variables, the unit is million.
     pd_afr = db.raw_sql(sql=f'''
-      select gvkey, datadate, at, ceq, csho, prcc_f, txdb, dlc, dltt, ib, sale, ch, ppent, re, act, lct
+      select gvkey, datadate, at, ceq, csho, prcc_f, txdb, dlc, dltt, ib, sale, ch, ppent, re, act, lct, rdip, cogs, invt
       from comp.funda
       where extract(year from datadate) >= {s_year} AND extract(year from datadate) <= {e_year}
     ''', date_cols=['datadate'])
-
+    #
     pd_afr.gvkey = pd_afr.gvkey.astype(int).astype(str) # ! keep in mind that we do not allow 00 at front
     pd_afr['year'] = pd.DatetimeIndex(pd_afr['datadate']).year
     pd_afr.to_pickle(f"./{tmp_data_path}/fin_raw_{s_year}_{e_year}.pickle")

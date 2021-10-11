@@ -27,8 +27,8 @@ def create_var(df):
     pd_afr = pd_afr.groupby(['gvkey', 'year'], sort=False).tail(1)
     
     #### create 
-    # keep at and sale
-    ratio_pd = pd_afr[['gvkey', 'year', 'at', 'sale']].copy()
+    # keep at ,sale, cash, rdip
+    ratio_pd = pd_afr[['gvkey', 'year', 'at', 'sale', 'ch', 'rdip']].copy()
     
     # market to book ratio
     ratio_pd['m2b'] = (pd_afr['at']+pd_afr['prcc_f']*pd_afr['csho']-pd_afr['ceq']-pd_afr['txdb'])/(pd_afr['at'])
@@ -54,6 +54,17 @@ def create_var(df):
     growth_pd['d_sale'] = (growth_pd['sale'] - growth_pd['lag_sale'])/growth_pd['lag_sale']
     growth_pd['d_at'] = (growth_pd['at'] - growth_pd['lag_at'])/growth_pd['lag_at']
     
+
+    # gsi ratio
+    ratio_pd['gsi'] = pd_afr['cogs']/pd_afr['invt']
+
+    # debit to equity ratio
+    ratio_pd['de'] = (pd_afr['dlc']+pd_afr['dltt'])/pd_afr['ceq']
+
+    # roe
+    ratio_pd['roe'] = pd_afr['ib']/pd_afr['ceq']
+
+
     #print('check df structure ok: ', growth_pd.head(5))
     
     ratio_pd = ratio_pd.merge(growth_pd[['gvkey', 'year', 'd_sale', 'd_at']])
@@ -62,6 +73,8 @@ def create_var(df):
     print('check df created ok: \n', ratio_pd.head(1))
     
     print('\n variable lists of ratio pd: ', ratio_pd.columns)
+
+    print(f"the output df contains {len(ratio_pd.columns)} number of variables:", ratio_pd.columns)
     
     return ratio_pd
     
@@ -94,18 +107,20 @@ def deal_na(df, na_thres):
     return ratio_pd_w
 
 
-def merge_fv_ma(df_fv_nona, df_ma):
+def merge_fv_ma(df_fv_nona, df_ma, total_num_of_fin_var):
     '''
     df_fv_nona: df_fv with no single missing value
     df_ma: 
+    total_num_of_fin_var: 19
     
     '''
+    total_num_of_fin_var += 1
     assert df_fv_nona.isna().sum().sum() == 0
     merge_a = df_ma.merge(df_fv_nona, how = 'inner', left_on=['AGVKEY', 'YEAR'], right_on = ['gvkey','year'])
-    merge_a.columns = list(merge_a.columns[0:len(merge_a.columns)-15]) + [x.upper()+'_A' for x in merge_a.columns[-15:]]
+    merge_a.columns = list(merge_a.columns[0:len(merge_a.columns)-total_num_of_fin_var]) + [x.upper()+'_A' for x in merge_a.columns[-total_num_of_fin_var:]]
     
     merge_t =  merge_a.merge(df_fv_nona, how = 'inner', left_on=['TGVKEY', 'YEAR'], right_on = ['gvkey','year'])
-    merge_t.columns = list(merge_t.columns[0:len(merge_t.columns)-15]) + [x.upper()+'_T' for x in merge_t.columns[-15:]]
+    merge_t.columns = list(merge_t.columns[0:len(merge_t.columns)-total_num_of_fin_var]) + [x.upper()+'_T' for x in merge_t.columns[-total_num_of_fin_var:]]
 
     #print("num of obs for original MA table: ", df_ma.shape[0], '\n')
     #print('num of obs in merged table:', merge_t.shape[0], '\n')
